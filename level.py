@@ -20,6 +20,10 @@ class Level():
                     self.player = Player(col*Level.tilesize,row*Level.tilesize)
                     self.objects.add(self.player)
                     print(col*Level.tilesize,row*Level.tilesize)
+                elif tile == 'P':
+                    self.player = Player(col*Level.tilesize,row*Level.tilesize)
+                    self.objects.add(self.player)
+                    print(col*Level.tilesize,row*Level.tilesize)
 
     def event_handle(self,event):
         self.player.event_handle(event)

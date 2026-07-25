@@ -5,6 +5,7 @@ from constant import TILESIZE
 from player.effect import Appear,Disappear
 from player.partical import DustF,DustH,DustJ,DustV
 import random
+from animation import Animation
 
 class State(Enum):
     IDLE = "idle"
@@ -18,41 +19,30 @@ class State(Enum):
 
 class Player(pygame.sprite.Sprite):
     frames = None
-    scale_value = (TILESIZE,TILESIZE)
-    appear = (TILESIZE*3,TILESIZE*3)
-    
     
     @classmethod
     def load_assets(cls):
         if cls.frames == None:
 
             cls.frames = dict()
-            cls.frames['idle'] = get_frames(r'assets\Main Characters\Ninja Frog\Idle (32x32).png',11,scale_factor=cls.scale_value)
-            cls.frames['run'] = get_frames(r'assets\Main Characters\Ninja Frog\Run (32x32).png',12,scale_factor=cls.scale_value)
-            cls.frames['wallJUMP'] = get_frames(r'assets\Main Characters\Ninja Frog\Wall Jump (32x32).png',5,scale_factor=cls.scale_value)
-            cls.frames['jump'] = get_frames(r'assets\Main Characters\Ninja Frog\Jump (32x32).png',1,scale_factor=cls.scale_value)
-            cls.frames['hurt'] = get_frames(r'assets\Main Characters\Ninja Frog\Hit (32x32).png',7,scale_factor=cls.scale_value)
-            cls.frames['fall'] = get_frames(r'assets\Main Characters\Ninja Frog\Fall (32x32).png',1,scale_factor=cls.scale_value)
-            cls.frames['djump'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6,scale_factor=cls.scale_value)
-            cls.frames['appear'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6,scale_factor=cls.scale_value)
-            cls.frames['desappear'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6,scale_factor=cls.scale_value)
+            cls.frames['idle'] = get_frames(r'assets\Main Characters\Ninja Frog\Idle (32x32).png',11)
+            cls.frames['run'] = get_frames(r'assets\Main Characters\Ninja Frog\Run (32x32).png',12)
+            cls.frames['wallJUMP'] = get_frames(r'assets\Main Characters\Ninja Frog\Wall Jump (32x32).png',5)
+            cls.frames['jump'] = get_frames(r'assets\Main Characters\Ninja Frog\Jump (32x32).png',1)
+            cls.frames['hurt'] = get_frames(r'assets\Main Characters\Ninja Frog\Hit (32x32).png',7)
+            cls.frames['fall'] = get_frames(r'assets\Main Characters\Ninja Frog\Fall (32x32).png',1)
+            cls.frames['djump'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
+            cls.frames['appear'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
+            cls.frames['desappear'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
 
     def __init__(self,x,y):
         super().__init__()
         Player.load_assets()
-        self.state = State.IDLE.value
-    
-        self.current = Player.frames[self.state]
-
-        # animation
-        self.animation_speed = .3
-        self.idx = 0
-        self.idx_f = 0
-        self.isfinished = False
 
         self.direction = 1 # (-1,left)  (1,right)
+        self.animation = Animation(Player.frames)
 
-        self.rect:pygame.Rect = self.current[1][0].get_rect()
+        self.rect:pygame.Rect = self.animation.image.get_rect()
         self.offset_x = TILESIZE//5
         self.rect.topleft = (x,y)
         self.rect.w -= self.offset_x*2
@@ -80,22 +70,10 @@ class Player(pygame.sprite.Sprite):
         self.effects = pygame.sprite.Group()
         self.particals = pygame.sprite.Group()
 
-        
-    def animation_loop(self):
-        self.idx_f += self.animation_speed
-        self.idx = int(self.idx_f)
-
-        if self.idx >= len(self.current[self.direction]):
-            self.idx = 0
-            self.idx_f = 0
-            self.isfinished = True
-        else:
-            self.isfinished = False
-
     def draw(self,screen,camera):
         if self.isvisible and len(self.effects) == 0:
-            screen.blit(self.current[self.direction][self.idx],(self.rect.x-self.offset_x,self.rect.y))
-        # pygame.draw.rect(screen,(255,0,0),self.rect,1)
+            screen.blit(self.animation.image,(self.rect.x-self.offset_x,self.rect.y))
+        pygame.draw.rect(screen,(255,0,0),self.rect,1)
 
         for partical in self.particals:
             partical.draw(screen)
@@ -103,36 +81,29 @@ class Player(pygame.sprite.Sprite):
         for effect in self.effects:
             effect.draw(screen)
 
-    def set_state(self,state):
-        # print(state.value)
-        if self.state != state.value:
-            self.state = state.value
-            self.idx = 0
-            self.idx_f = 0
-            self.current = Player.frames[self.state]
 
     def update_state(self):
         if self.is_hit:
-            self.set_state(State.HURT)
-            if self.isfinished:
+            self.animation.set_state(State.HURT.value)
+            if self.animation.isfinished:
                 self.is_hit = False
         elif self.isdoublej:
-            self.set_state(State.DJUMP)
-            if self.isfinished:
+            self.animation.set_state(State.DJUMP.value)
+            if self.animation.isfinished:
                 self.isdoublej = False
         elif self.isjumped:
-            self.set_state(State.JUMP)
+            self.animation.set_state(State.JUMP.value)
         elif self.isfall:
             if self.iscollide_left or self.iscollide_right:
-                self.set_state(State.WALLJUMP)
+                self.animation.set_state(State.WALLJUMP.value)
                 self.vel_y = 1
                 self.doublejumpuse = False
             else:
-                self.set_state(State.FALL)
+                self.animation.set_state(State.FALL.value)
         elif not self.move:
-            self.set_state(State.IDLE)
+            self.animation.set_state(State.IDLE.value)
         else:
-            self.set_state(State.RUN)
+            self.animation.set_state(State.RUN.value)
 
     def movement_y(self):
         self.vel_y += self.gravity
@@ -159,10 +130,6 @@ class Player(pygame.sprite.Sprite):
                 self.vel_y = 0
         if self.isfall:
             self.hitground = False
-            # self.particals.add(DustJ(self.rect.centerx,self.rect.bottom,random.randint(20,40),50))
-
-            
-
 
     def movement_x(self):
         self.rect.x += self.speed_dt
@@ -194,7 +161,8 @@ class Player(pygame.sprite.Sprite):
 
             
     def update(self,level):
-        self.animation_loop()
+        self.animation.direction = self.direction
+        self.animation.update()
 
         self.movement_y() #y-axis movement
         self.collision_check_y_axis(level) #y-axis collision
