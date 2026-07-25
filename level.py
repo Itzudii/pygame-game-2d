@@ -1,6 +1,7 @@
 import pygame
 from maps import map1
 from player.model import Player
+from items.flag import Flag
 from constant import TILESIZE,WINDOW_W,WINDOW_H
 
 class Level():
@@ -8,7 +9,7 @@ class Level():
     def __init__(self):
         self.player = None
         self.landblocks = []
-        self.objects = pygame.sprite.Group()
+        self.flags = pygame.sprite.Group()
         self.load_map()
 
     def load_map(self):
@@ -18,12 +19,9 @@ class Level():
                     self.landblocks.append(pygame.Rect(col*Level.tilesize,row*Level.tilesize,Level.tilesize,Level.tilesize))
                 elif tile == 'P':
                     self.player = Player(col*Level.tilesize,row*Level.tilesize)
-                    self.objects.add(self.player)
-                    print(col*Level.tilesize,row*Level.tilesize)
-                elif tile == 'P':
-                    self.player = Player(col*Level.tilesize,row*Level.tilesize)
-                    self.objects.add(self.player)
-                    print(col*Level.tilesize,row*Level.tilesize)
+                elif tile == 'S':
+                    temp = Flag((col*Level.tilesize,(row+1)*Level.tilesize))
+                    self.flags.add(temp)
 
     def event_handle(self,event):
         self.player.event_handle(event)
@@ -37,11 +35,24 @@ class Level():
         for block in self.landblocks:
             pygame.draw.rect(screen,(255,0,0),block,1)
 
-        for object in self.objects:
-            object.draw(screen,"")
+        for flag in self.flags:
+            flag.draw(screen)
+
+        self.player.draw(screen,"")
+
+    def collisions(self):
+        
+        for flag in self.flags:
+            if flag.rect.colliderect(self.player.rect) and self.player.move:
+                flag.hit()
+                print('hit')
+
+
 
     def update(self):
-        self.objects.update(level=self)
+        self.collisions()
+        self.flags.update()
+        self.player.update(level=self)
         # self.camera.update(self.player)
 
 
