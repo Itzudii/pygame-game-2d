@@ -1,33 +1,24 @@
 import random 
 import pygame
 from utils.dependency import get_img
-class Partical(pygame.sprite.Sprite):
-    frame = get_img(r"assets\Other\Dust Particle.png",(10,10))
-    def __init__(self,lifespan):
-        super().__init__()
-        self.frame = Partical.frame.convert_alpha()
-        self.w = self.frame.get_width()
-        self.life = lifespan
-        self.max_life = lifespan
+from utils.partical import Partical
 
-    def update(self):
-        self.life -= 1
-        alpha = int(255 * (self.life / self.max_life))
-        self.frame.set_alpha(alpha)
-        if self.life == 0:
-            self.kill()
+class Dust(Partical):
+    img = get_img(r"assets\Other\Dust Particle.png",(10,10))
+    def __init__(self, lifespan):
+        super().__init__(lifespan)
+        self.img = self.__class__.img.convert_alpha()
+        self.w = self.img.get_width()
 
+    def draw(self,screen):
+        screen.blit(self.img,(self.x-self.w//2,self.y-self.w//2))
 
-
-class DustH(Partical):
+class DustH(Dust):
     def __init__(self,x,y,lifespan,h):
         super().__init__(lifespan)
         self.x = x
         self.y = y
         self.df = lifespan/h
-
-    def draw(self,screen):
-        screen.blit(self.frame,(self.x-self.w//2,self.y-self.w//2))
 
     def update(self):
         super().update()
@@ -36,32 +27,25 @@ class DustH(Partical):
         else:
             self.y += self.df
 
-class DustJ(Partical):
+class DustJ(Dust):
     def __init__(self,x,y,lifespan,h):
         super().__init__(lifespan)
         self.x = x
         self.y = y
-        self.df = lifespan/h
-
-    def draw(self,screen):
-        screen.blit(self.frame,(self.x-self.w//2,self.y-self.w//2))
 
     def update(self):
         super().update()
-    
         self.y -= 1
+    
         
 
-class DustF(Partical):
+class DustF(Dust):
     def __init__(self,x,y,lifespan,h):
         super().__init__(lifespan)
         self.x = x
         self.y = y
         self.df = lifespan/h
         self.speed = random.choice((2,-2))
-
-    def draw(self,screen):
-        screen.blit(self.frame,(self.x-self.w//2,self.y-self.w//2))
 
     def update(self):
         super().update()
@@ -72,7 +56,7 @@ class DustF(Partical):
 
         self.x += self.speed
             
-class DustV(Partical):
+class DustV(Dust):
     def __init__(self,x,y,lifespan):
         super().__init__(lifespan)
         self.x = x
@@ -83,9 +67,6 @@ class DustV(Partical):
         self.direction = random.choice((1,-1))
         self.vel_x = self.x
         self.speed = random.random()
-
-    def draw(self,screen):
-        screen.blit(self.frame,(self.x-self.w//2,self.y-self.w//2))
 
     def update(self):
         super().update()

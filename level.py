@@ -1,7 +1,9 @@
 import pygame
 from maps import map1
 from player.model import Player
-from items.checkpoint import Start,End,Flag
+from items.checkpoints import Start,End,Flag
+from items.fruits import Apple
+from items.boxs import Box
 from constant import TILESIZE,WINDOW_W,WINDOW_H
 
 class Level():
@@ -9,7 +11,8 @@ class Level():
     def __init__(self):
         self.player = None
         self.landblocks = []
-        self.flags = pygame.sprite.Group()
+        self.checkpoints = pygame.sprite.Group()
+        self.fruits = pygame.sprite.Group()
         self.load_map()
 
     def load_map(self):
@@ -21,13 +24,16 @@ class Level():
                     self.player = Player(col*Level.tilesize,row*Level.tilesize)
                 elif tile == 'S':
                     temp = Start((col*Level.tilesize,(row+1)*Level.tilesize))
-                    self.flags.add(temp)
-                elif tile == 'E':
-                    temp = End((col*Level.tilesize,(row+1)*Level.tilesize))
-                    self.flags.add(temp)
+                    self.checkpoints.add(temp)
+                elif tile == 'B':
+                    temp = Box((col*Level.tilesize,(row+1)*Level.tilesize))
+                    self.checkpoints.add(temp)
                 elif tile == 'F':
                     temp = Flag((col*Level.tilesize,(row+1)*Level.tilesize))
-                    self.flags.add(temp)
+                    self.checkpoints.add(temp)
+                elif tile == 'A':
+                    temp = Apple((col*Level.tilesize,(row+1)*Level.tilesize))
+                    self.fruits.add(temp)
 
     def event_handle(self,event):
         self.player.event_handle(event)
@@ -41,23 +47,31 @@ class Level():
         for block in self.landblocks:
             pygame.draw.rect(screen,(255,0,0),block,1)
 
-        for flag in self.flags:
+        for flag in self.checkpoints:
             flag.draw(screen)
+
+        for fruit in self.fruits:
+            fruit.draw(screen)
 
         self.player.draw(screen,"")
 
     def collisions(self):
         
-        for flag in self.flags:
+        for flag in self.checkpoints:
             if flag.rect.colliderect(self.player.rect) and self.player.move:
                 flag.hit()
                 # save coord
 
+        for fruit in self.fruits:
+            if fruit.rect.colliderect(self.player.rect):
+                fruit.hit()
+                #  increase points
 
 
     def update(self):
         self.collisions()
-        self.flags.update()
+        self.checkpoints.update()
+        self.fruits.update()
         self.player.update(level=self)
         # self.camera.update(self.player)
 

@@ -7,7 +7,8 @@ def get_frames(url,col,both = True,offset_l=0,offset_r=0,offset_t=0,scale_factor
     tilesize = w//col
     ratiox = tilesize/BASESIZE
     ratioy = tilesize/BASESIZE
-    scale_factor = (TILESIZE*ratiox,TILESIZE*ratioy)
+    if not scale_factor:
+        scale_factor = (TILESIZE*ratiox,TILESIZE*ratioy)
 
     frames_orignal = [img.subsurface(pygame.Rect(tilesize*i+offset_l,offset_t,(tilesize-offset_l)-offset_r,h-offset_t)) for i in range(col)]
     if scale_factor:
