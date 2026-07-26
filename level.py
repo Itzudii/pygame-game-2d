@@ -1,7 +1,7 @@
 import pygame
 from maps import map1
 from player.model import Player
-from items.flag import Flag
+from items.checkpoint import Start,End,Flag
 from constant import TILESIZE,WINDOW_W,WINDOW_H
 
 class Level():
@@ -20,6 +20,12 @@ class Level():
                 elif tile == 'P':
                     self.player = Player(col*Level.tilesize,row*Level.tilesize)
                 elif tile == 'S':
+                    temp = Start((col*Level.tilesize,(row+1)*Level.tilesize))
+                    self.flags.add(temp)
+                elif tile == 'E':
+                    temp = End((col*Level.tilesize,(row+1)*Level.tilesize))
+                    self.flags.add(temp)
+                elif tile == 'F':
                     temp = Flag((col*Level.tilesize,(row+1)*Level.tilesize))
                     self.flags.add(temp)
 
@@ -45,7 +51,7 @@ class Level():
         for flag in self.flags:
             if flag.rect.colliderect(self.player.rect) and self.player.move:
                 flag.hit()
-                print('hit')
+                # save coord
 
 
 
