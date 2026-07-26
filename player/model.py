@@ -3,7 +3,7 @@ from enum import Enum
 from utils.dependency import get_frames
 from constant import TILESIZE
 from player.effect import Appear,Disappear
-from player.partical import DustF,DustH,DustJ,DustV
+from player.dust_partical import DustF,DustH,DustJ,DustV
 import random
 from animation import Animation
 
@@ -110,24 +110,49 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += round(self.vel_y)
 
     def collision_check_y_axis(self,level):
-        
         foot = self.rect.move(0, 1)
-        grounded = any(foot.colliderect(block) for block in level.landblocks)
-        self.isjumped = self.vel_y < 0
-        self.isfall = not grounded
 
-        for block in level.landblocks:
-            if self.rect.colliderect(block):
-                if self.isjumped:
-                    self.rect.top = block.bottom
-                    self.isdoublej = False
-                else:
-                    self.rect.bottom = block.top
-                    if not self.hitground:
-                        self.hitground = True
-                        for _ in range(5):
-                            self.particals.add(DustF(self.rect.centerx,self.rect.bottom,random.randint(20,40),50))
-                self.vel_y = 0
+        def collision_check_y_axis_rects(rects):
+
+            grounded = any(foot.colliderect(rect) for rect in rects)
+            for rect in rects:
+                if self.rect.colliderect(rect):
+                    if self.isjumped:
+                        self.rect.top = rect.bottom
+                        self.isdoublej = False
+                    else:
+                        self.rect.bottom = rect.top
+                        if not self.hitground:
+                            self.hitground = True
+                            for _ in range(5):
+                                self.particals.add(DustF(self.rect.centerx,self.rect.bottom,random.randint(20,40),50))
+                    self.vel_y = 0
+            return grounded
+
+        def collision_check_y_axis_objs(objs):
+            grounded = any(foot.colliderect(obj.rect) for obj in objs)
+
+            for obj in objs:
+                if self.rect.colliderect(obj.rect):
+                    if self.isjumped:
+                        self.rect.top = obj.rect.bottom
+                        self.isdoublej = False
+                    else:
+                        self.rect.bottom = obj.rect.top
+                        if not self.hitground:
+                            self.hitground = True
+                            for _ in range(5):
+                                self.particals.add(DustF(self.rect.centerx,self.rect.bottom,random.randint(20,40),50))
+                    self.vel_y = 0
+            return grounded
+
+        self.isjumped = self.vel_y < 0
+        grounded = any((
+            collision_check_y_axis_rects(level.landblocks),
+            collision_check_y_axis_objs(level.boxs)
+        ))
+
+        self.isfall = not grounded
         if self.isfall:
             self.hitground = False
 
@@ -142,6 +167,7 @@ class Player(pygame.sprite.Sprite):
                 self.particals.add(DustV(self.rect.x,self.rect.bottom,random.randint(20,30)))
             elif self.iscollide_right:
                 self.particals.add(DustV(self.rect.right,self.rect.bottom,random.randint(20,30)))
+           
                 
 
 
@@ -149,7 +175,7 @@ class Player(pygame.sprite.Sprite):
         self.iscollide_right = False
         self.iscollide_left = False
 
-        for block in level.landblocks:
+        def tile_collision(block):
             if self.rect.colliderect(block):
                 if self.speed_dt < 0:
                     self.rect.left = block.right
@@ -157,6 +183,12 @@ class Player(pygame.sprite.Sprite):
                 elif self.speed_dt > 0:
                     self.rect.right = block.left
                     self.iscollide_right = True
+
+        for block in level.landblocks:
+            tile_collision(block)
+
+        for box in level.boxs:
+            tile_collision(box.rect)
                 
 
             

@@ -13,6 +13,8 @@ class Level():
         self.landblocks = []
         self.checkpoints = pygame.sprite.Group()
         self.fruits = pygame.sprite.Group()
+        self.boxs = pygame.sprite.Group()
+    
         self.load_map()
 
     def load_map(self):
@@ -27,7 +29,7 @@ class Level():
                     self.checkpoints.add(temp)
                 elif tile == 'B':
                     temp = Box((col*Level.tilesize,(row+1)*Level.tilesize))
-                    self.checkpoints.add(temp)
+                    self.boxs.add(temp)
                 elif tile == 'F':
                     temp = Flag((col*Level.tilesize,(row+1)*Level.tilesize))
                     self.checkpoints.add(temp)
@@ -50,6 +52,9 @@ class Level():
         for flag in self.checkpoints:
             flag.draw(screen)
 
+        for box in self.boxs:
+            box.draw(screen)
+
         for fruit in self.fruits:
             fruit.draw(screen)
 
@@ -67,11 +72,17 @@ class Level():
                 fruit.hit()
                 #  increase points
 
+        for box in self.boxs:
+            if box.rect.colliderect(self.player.rect):
+                box.get_break()
+                #  increase points
+
 
     def update(self):
         self.collisions()
         self.checkpoints.update()
         self.fruits.update()
+        self.boxs.update()
         self.player.update(level=self)
         # self.camera.update(self.player)
 

@@ -1,5 +1,4 @@
 import random 
-import pygame
 from utils.dependency import get_img
 from utils.partical import Partical
 

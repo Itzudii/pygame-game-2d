@@ -3,21 +3,32 @@ from utils.dependency import get_frames
 from animation import Animation
 
 import random 
-from utils.dependency import get_img
+from utils.partical import Partical
 
-class Partical(pygame.sprite.Sprite):
-    def __init__(self,lifespan):
-        super().__init__()
+
+class Fragment(Partical):
+    def __init__(self,img,x,y,lifespan,h):
+        super().__init__(lifespan)
+        self.img = img.convert_alpha()
         self.w = self.img.get_width()
-        self.life = lifespan
-        self.max_life = lifespan
+        self.x = x
+        self.y = y
+        self.df = lifespan/h
+        self.speed = random.choice((2,-2))
+        
+    def draw(self,screen):
+        screen.blit(self.img,(self.x-self.w//2,self.y-self.w//2))
 
     def update(self):
-        self.life -= 1
-        alpha = int(255 * (self.life / self.max_life))
-        self.img.set_alpha(alpha)
-        if self.life == 0:
-            self.kill()
+        super().update()
+        if self.life >= self.max_life/2:
+            self.y -= self.df
+        else:
+            self.y += self.df
+
+        self.x += self.speed
+
+
 
 
 
@@ -47,9 +58,13 @@ class Box(pygame.sprite.Sprite):
         self.rect = self.ani.image.get_rect()
         self.rect.bottomleft = bottomleft
         self.ishit = False
+        self.fragments = pygame.sprite.Group()
 
     def draw(self,screen):
         screen.blit(self.ani.image,self.rect.topleft)
+
+        for frag in self.fragments:
+            frag.draw(screen)
 
     def update(self):
         if self.ani.isfinished and self.ishit:
@@ -57,13 +72,18 @@ class Box(pygame.sprite.Sprite):
             self.ishit = False
         self.ani.update()
 
+        self.fragments.update()
+
     def hit(self):
         if not self.ishit:
             self.ani.set_state('hit')
         self.ishit = True
 
     def get_break(self):
-        pass
+        if len(self.fragments) < 4:
+            idx = random.randint(0,3)
+            temp = Fragment(self.break_frames[idx],random.randint(self.rect.left,self.rect.right),random.randint(self.rect.top,self.rect.bottom),20,50)
+            self.fragments.add(temp)
 
 
         
