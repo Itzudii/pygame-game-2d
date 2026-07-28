@@ -5,10 +5,10 @@ from constant import WINDOW_W,WINDOW_H
 class App():
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((WINDOW_W,WINDOW_H))
-        self.clock = pygame.time.Clock()
         self.level = Level()
+        self.clock = pygame.time.Clock()
         
+        self.screen = pygame.display.set_mode((self.level.map.window_width,self.level.map.window_height))
         self.isRunning = True
         self.dt = 0
 

@@ -46,7 +46,7 @@ class Player(pygame.sprite.Sprite):
         self.offset_x = TILESIZE//5
         self.rect.topleft = (x,y)
         self.rect.w -= self.offset_x*2
-        self.speed = 3
+        self.speed = TILESIZE//6
         self.speed_dt = 0
         self.move = False
 

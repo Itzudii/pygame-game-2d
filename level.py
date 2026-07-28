@@ -5,12 +5,15 @@ from items.checkpoints import Start,End,Flag
 from items.fruits import Apple
 from items.boxs import Box
 from constant import TILESIZE,WINDOW_W,WINDOW_H
-
+import json
+from tmj.tiledraw import TileDraw
 class Level():
     tilesize=TILESIZE
     def __init__(self):
-        self.player = None
-        self.landblocks = []
+        self.map = TileDraw('tiled/map_final.tmj')
+        self.landblocks = [pygame.Rect(pos[0],pos[1],TILESIZE,TILESIZE) for img,pos in self.map.collision_tiles]
+
+        self.player = Player(5*Level.tilesize,5*Level.tilesize)
         self.checkpoints = pygame.sprite.Group()
         self.fruits = pygame.sprite.Group()
         self.boxs = pygame.sprite.Group()
@@ -18,24 +21,25 @@ class Level():
         self.load_map()
 
     def load_map(self):
-        for row,lst in enumerate(map1):
-            for col,tile in enumerate(lst):
-                if tile == '#':
-                    self.landblocks.append(pygame.Rect(col*Level.tilesize,row*Level.tilesize,Level.tilesize,Level.tilesize))
-                elif tile == 'P':
-                    self.player = Player(col*Level.tilesize,row*Level.tilesize)
-                elif tile == 'S':
-                    temp = Start((col*Level.tilesize,(row+1)*Level.tilesize))
-                    self.checkpoints.add(temp)
-                elif tile == 'B':
-                    temp = Box((col*Level.tilesize,(row+1)*Level.tilesize))
-                    self.boxs.add(temp)
-                elif tile == 'F':
-                    temp = Flag((col*Level.tilesize,(row+1)*Level.tilesize))
-                    self.checkpoints.add(temp)
-                elif tile == 'A':
-                    temp = Apple((col*Level.tilesize,(row+1)*Level.tilesize))
-                    self.fruits.add(temp)
+        pass
+        # for row,lst in enumerate(map1):
+        #     for col,tile in enumerate(lst):
+        #         if tile == '#':
+        #             self.landblocks.append(pygame.Rect(col*Level.tilesize,row*Level.tilesize,Level.tilesize,Level.tilesize))
+        #         elif tile == 'P':
+        #             self.player = Player(col*Level.tilesize,row*Level.tilesize)
+        #         elif tile == 'S':
+        #             temp = Start((col*Level.tilesize,(row+1)*Level.tilesize))
+        #             self.checkpoints.add(temp)
+        #         elif tile == 'B':
+        #             temp = Box((col*Level.tilesize,(row+1)*Level.tilesize))
+        #             self.boxs.add(temp)
+        #         elif tile == 'F':
+        #             temp = Flag((col*Level.tilesize,(row+1)*Level.tilesize))
+        #             self.checkpoints.add(temp)
+        #         elif tile == 'A':
+        #             temp = Apple((col*Level.tilesize,(row+1)*Level.tilesize))
+        #             self.fruits.add(temp)
 
     def event_handle(self,event):
         self.player.event_handle(event)
@@ -46,8 +50,7 @@ class Level():
         pass
 
     def draw(self,screen):
-        for block in self.landblocks:
-            pygame.draw.rect(screen,(255,0,0),block,1)
+        self.map.draw_layers(screen)
 
         for flag in self.checkpoints:
             flag.draw(screen)

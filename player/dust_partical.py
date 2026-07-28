@@ -1,9 +1,9 @@
 import random 
 from utils.dependency import get_img
 from utils.partical import Partical
-
+from constant import TILESIZE
 class Dust(Partical):
-    img = get_img(r"assets\Other\Dust Particle.png",(10,10))
+    img = get_img(r"assets\Other\Dust Particle.png",(TILESIZE//3,TILESIZE//3))
     def __init__(self, lifespan):
         super().__init__(lifespan)
         self.img = self.__class__.img.convert_alpha()
