@@ -11,3 +11,6 @@ class Partical(pygame.sprite.Sprite):
         self.img.set_alpha(alpha)
         if self.life == 0:
             self.kill()
+
+    def __type__(self):
+        return Partical

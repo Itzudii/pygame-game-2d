@@ -1,23 +1,10 @@
 import tmj.utils as utils
 import pygame
 from constant import TILESIZE
-def get_img_src(name):
-        assets = {
-            'Terrain (16x16).png':'assets\Terrain\Terrain (16x16).png',
-            # 'apple.png':'tiled/',
-            # 'box.png':'tiled/',
-            # 'checkpoint.png':'tiled/',
-            # 'end.png':'tiled/',
-            # 'player.png':'tiled/',
-            # 'start.png':'tiled/',
-        }
-        return assets[name]
-# TILESIZE = 30
+from tmj.schemas import name_to_path
 
-# class Rect(pygame.Rect):
-#     def __int__(self,*args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.surface = None
+def get_img_src(name):
+    return name_to_path[name]
 
 class TileDraw():
     def __init__(self,tmj_file):
@@ -30,6 +17,7 @@ class TileDraw():
         self.surfaces = dict()
         self.normal_tiles = []
         self.collision_tiles = []
+        self.objs = []
 
         self.load_tiles()
 
@@ -40,6 +28,12 @@ class TileDraw():
     @property
     def window_height(self):
         return self.data['height']*TILESIZE
+
+    def get_collision_rect(self,gid):
+        for img in self.imgs:
+            if 'gid' in img and img['gid'] == gid:
+                return img.get('rect')
+        return None
 
     def load_surface(self,name):
         surface = self.surfaces.get(name)    
@@ -85,7 +79,11 @@ class TileDraw():
             img = self.get_surface(gid)
             if img:
                 self.collision_tiles.append((img,((idx%w)*tilesize,(idx//w)*tilesize)))
-        
+
+    def load_objs(self,layer):
+        for obj in layer.get('objects',[]):
+            self.objs.append((obj.get('gid',None),obj.get('name',''),(obj['x'],obj['y'])))
+
     def load_tiles(self):
         for layer in self.layers:
             name = layer['name']
@@ -93,6 +91,9 @@ class TileDraw():
                 self.load_normal_tiles(layer)
             elif name == 'collision':
                 self.load_collision_tiles(layer)
+            else:
+                self.load_objs(layer)
+
 
     def draw_layers(self,screen):
         for img,pos in self.normal_tiles:
@@ -100,4 +101,5 @@ class TileDraw():
 
         for img,pos in self.collision_tiles:
             screen.blit(img,pos)
+
 

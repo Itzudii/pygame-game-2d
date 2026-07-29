@@ -18,6 +18,7 @@ class State(Enum):
 
 
 class Player(pygame.sprite.Sprite):
+    name = 'player'
     frames = None
     
     @classmethod
@@ -35,7 +36,7 @@ class Player(pygame.sprite.Sprite):
             cls.frames['appear'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
             cls.frames['desappear'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
 
-    def __init__(self,x,y):
+    def __init__(self,bottomleft):
         super().__init__()
         Player.load_assets()
 
@@ -44,7 +45,7 @@ class Player(pygame.sprite.Sprite):
 
         self.rect:pygame.Rect = self.animation.image.get_rect()
         self.offset_x = TILESIZE//5
-        self.rect.topleft = (x,y)
+        self.rect.topleft = bottomleft
         self.rect.w -= self.offset_x*2
         self.speed = TILESIZE//6
         self.speed_dt = 0

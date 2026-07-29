@@ -1,45 +1,65 @@
 import pygame
 from maps import map1
 from player.model import Player
-from items.checkpoints import Start,End,Flag
-from items.fruits import Apple
+from items.checkpoints import Start,End,Flag,Checkpoint
+from items.fruits import Apple,Fruit
 from items.boxs import Box
-from constant import TILESIZE,WINDOW_W,WINDOW_H
+from constant import TILESIZE,BASESIZE
 import json
 from tmj.tiledraw import TileDraw
+
+def get_obj(name:str):
+    name_to_obj = {
+        'apple':Apple,
+        'box':Box,
+        'flag':Flag,
+        'end':End,
+        'player':Player,
+        'start':Start,
+    }
+
+    return name_to_obj.get(name)
+
 class Level():
     tilesize=TILESIZE
     def __init__(self):
         self.map = TileDraw('tiled/map_final.tmj')
         self.landblocks = [pygame.Rect(pos[0],pos[1],TILESIZE,TILESIZE) for img,pos in self.map.collision_tiles]
 
-        self.player = Player(5*Level.tilesize,5*Level.tilesize)
+        self.player = None
         self.checkpoints = pygame.sprite.Group()
         self.fruits = pygame.sprite.Group()
         self.boxs = pygame.sprite.Group()
-    
+
         self.load_map()
 
+    
     def load_map(self):
-        pass
-        # for row,lst in enumerate(map1):
-        #     for col,tile in enumerate(lst):
-        #         if tile == '#':
-        #             self.landblocks.append(pygame.Rect(col*Level.tilesize,row*Level.tilesize,Level.tilesize,Level.tilesize))
-        #         elif tile == 'P':
-        #             self.player = Player(col*Level.tilesize,row*Level.tilesize)
-        #         elif tile == 'S':
-        #             temp = Start((col*Level.tilesize,(row+1)*Level.tilesize))
-        #             self.checkpoints.add(temp)
-        #         elif tile == 'B':
-        #             temp = Box((col*Level.tilesize,(row+1)*Level.tilesize))
-        #             self.boxs.add(temp)
-        #         elif tile == 'F':
-        #             temp = Flag((col*Level.tilesize,(row+1)*Level.tilesize))
-        #             self.checkpoints.add(temp)
-        #         elif tile == 'A':
-        #             temp = Apple((col*Level.tilesize,(row+1)*Level.tilesize))
-        #             self.fruits.add(temp)
+
+        def update_collision_rect(obj,rect):
+            ratio = TILESIZE/BASESIZE
+            obj.rect.x += int(rect['x'])*ratio
+            obj.rect.y += int(rect['y'])*ratio
+            obj.rect.w = int(rect['width'])*ratio
+            obj.rect.h = int(rect['height'])*ratio
+            return obj
+
+
+        for gid,name,pos in self.map.objs:
+            ref = get_obj(name)
+            if ref:
+                obj = ref((pos[0]*TILESIZE//16,pos[1]*TILESIZE//16))
+                rect = self.map.get_collision_rect(gid)
+                if rect:
+                    obj = update_collision_rect(obj,rect)
+                if isinstance(obj,Player):
+                    self.player = obj
+                elif isinstance(obj,Fruit):
+                    self.fruits.add(obj)
+                elif isinstance(obj,Checkpoint):
+                    self.checkpoints.add(obj)
+                elif isinstance(obj,Box):
+                    self.boxs.add(obj)
 
     def event_handle(self,event):
         self.player.event_handle(event)

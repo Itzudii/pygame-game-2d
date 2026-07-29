@@ -28,6 +28,8 @@ class Fragment(Partical):
 
         self.x += self.speed
 
+    
+
 
 
 
@@ -55,13 +57,15 @@ class Box(pygame.sprite.Sprite):
         super().__init__()
         self.ani = Animation(cls.frames)
         self.break_frames = cls.frames['break'][1]
-        self.rect = self.ani.image.get_rect()
-        self.rect.bottomleft = bottomleft
+        self.img_rect = self.ani.image.get_rect()
+        self.img_rect.bottomleft = bottomleft
+        self.rect = self.img_rect.copy()
         self.ishit = False
         self.fragments = pygame.sprite.Group()
 
     def draw(self,screen):
-        screen.blit(self.ani.image,self.rect.topleft)
+        screen.blit(self.ani.image,self.img_rect.topleft)
+        pygame.draw.rect(screen,(255,0,0),self.rect,1)
 
         for frag in self.fragments:
             frag.draw(screen)
@@ -85,5 +89,7 @@ class Box(pygame.sprite.Sprite):
             temp = Fragment(self.break_frames[idx],random.randint(self.rect.left,self.rect.right),random.randint(self.rect.top,self.rect.bottom),20,50)
             self.fragments.add(temp)
 
+    def __type__(self):
+        return Box
 
         

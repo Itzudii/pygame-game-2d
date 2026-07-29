@@ -4,9 +4,9 @@ def get_frames(url,col,both = True,offset_l=0,offset_r=0,offset_t=0,scale_factor
     img = pygame.image.load(url)
     w = img.get_width()
     h = img.get_height()
-    tilesize = w//col
+    tilesize= w//col
     ratiox = tilesize/BASESIZE
-    ratioy = tilesize/BASESIZE
+    ratioy = h/BASESIZE
     if not scale_factor:
         scale_factor = (TILESIZE*ratiox,TILESIZE*ratioy)
 

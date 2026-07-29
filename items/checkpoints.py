@@ -18,12 +18,13 @@ class Checkpoint(pygame.sprite.Sprite):
         cls.load_assets()
         super().__init__()
         self.ani = Animation(cls.frames,direction)
-        self.rect = self.ani.image.get_rect()
-        self.rect.bottomleft = bottomleft
+        self.img_rect = self.ani.image.get_rect()
+        self.img_rect.bottomleft = bottomleft
+        self.rect = self.img_rect.copy()
         self.ishit = False
 
     def draw(self,screen):
-        screen.blit(self.ani.image,self.rect.topleft)
+        screen.blit(self.ani.image,self.img_rect.topleft)
 
     def update(self):
         if self.ani.isfinished and self.ishit:
@@ -35,6 +36,9 @@ class Checkpoint(pygame.sprite.Sprite):
         if not self.ishit:
             self.ani.set_state('move')
         self.ishit = True
+
+    def __type__(self):
+        return Checkpoint
 
 class Start(Checkpoint):
     assets = {
