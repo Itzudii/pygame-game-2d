@@ -1,7 +1,6 @@
 import pygame
 import sys
-from level import Level,map1
-from constant import WINDOW_W,WINDOW_H
+from level import Level
 class App():
     def __init__(self):
         pygame.init()
@@ -11,6 +10,10 @@ class App():
         self.screen = pygame.display.set_mode((self.level.map.window_width,self.level.map.window_height))
         self.isRunning = True
         self.dt = 0
+        self.load()
+
+    def load(self):
+        self.level.load()
 
     def event_handling(self):
         for event in pygame.event.get():
@@ -26,7 +29,7 @@ class App():
     
     def run(self):
         while self.isRunning:
-            self.screen.fill((0,0,0))
+            self.screen.fill((33,31,48))
 
             self.event_handling()
             

@@ -1,7 +1,7 @@
 import pygame
 from enum import Enum
 from utils.dependency import get_frames
-from constant import TILESIZE
+from settings import TILESIZE
 from player.effect import Appear,Disappear
 from player.dust_partical import DustF,DustH,DustJ,DustV
 import random
@@ -73,14 +73,14 @@ class Player(pygame.sprite.Sprite):
 
     def draw(self,screen,camera):
         if self.isvisible and len(self.effects) == 0:
-            screen.blit(self.animation.image,(self.rect.x-self.offset_x,self.rect.y))
-        pygame.draw.rect(screen,(255,0,0),self.rect,1)
+            screen.blit(self.animation.image,camera.apply_pos((self.rect.x-self.offset_x,self.rect.y)))
+        pygame.draw.rect(screen,(255,0,0),camera.apply_rect(self.rect),1)
 
         for partical in self.particals:
-            partical.draw(screen)
+            partical.draw(screen,camera)
 
         for effect in self.effects:
-            effect.draw(screen)
+            effect.draw(screen,camera)
 
 
     def update_state(self):
@@ -150,7 +150,7 @@ class Player(pygame.sprite.Sprite):
         self.isjumped = self.vel_y < 0
         grounded = any((
             collision_check_y_axis_rects(level.landblocks),
-            collision_check_y_axis_objs(level.boxs)
+            # collision_check_y_axis_objs(level.boxs)
         ))
 
         self.isfall = not grounded
@@ -185,11 +185,14 @@ class Player(pygame.sprite.Sprite):
                     self.rect.right = block.left
                     self.iscollide_right = True
 
-        for block in level.landblocks:
-            tile_collision(block)
+        # for block in level.landblocks:
+        #     tile_collision(block)
 
-        for box in level.boxs:
-            tile_collision(box.rect)
+        # for box in level.boxs:
+        #     tile_collision(box.rect)
+
+        for rect in level.landblocks:
+            tile_collision(rect)
                 
 
             

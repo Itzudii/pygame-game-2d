@@ -1,6 +1,7 @@
 import pygame
-from utils.dependency import get_frames
 from animation import Animation
+from pytmx_mapper.utils import get_transform_images
+
 
 import random 
 from utils.partical import Partical
@@ -38,34 +39,35 @@ class Fragment(Partical):
 
 class Box(pygame.sprite.Sprite):
     frames = None
-    assets = {
-        'idle':(r'assets\Items\Boxes\Box1\Idle.png',1),
-        'hit':(r'assets\Items\Boxes\Box1\Hit (28x24).png',3),
-        'break':(r'assets\Items\Boxes\Box1\Break.png',4)
-    }
+    # assets = {
+    #     'idle':(r'assets\Items\Boxes\Box1\Idle.png',1),
+    #     'hit':(r'assets\Items\Boxes\Box1\Hit (28x24).png',3),
+    #     'break':(r'assets\Items\Boxes\Box1\Break.png',4)
+    # }
 
     @classmethod
-    def load_assets(cls):
+    def load_assets(cls,data):
         if cls.frames is None:
             cls.frames = {}
             for state, (path, count) in cls.assets.items():
-                cls.frames[state] = get_frames(path, count,both=False)
+                cls.frames[state] = {1:get_transform_images(path, count,data.size,data.transform)}
 
-    def __init__(self,bottomleft):
+    def __init__(self,data):
         cls = self.__class__
-        cls.load_assets()
+        cls.load_assets(data)
         super().__init__()
         self.ani = Animation(cls.frames)
         self.break_frames = cls.frames['break'][1]
         self.img_rect = self.ani.image.get_rect()
-        self.img_rect.bottomleft = bottomleft
-        self.rect = self.img_rect.copy()
+        self.img_rect.topleft = data.pos
+        self.rects = [pygame.Rect(rect.x,rect.y,rect.w,rect.h) for rect in data.rects]
+        self.rect = self.rects[0]
         self.ishit = False
         self.fragments = pygame.sprite.Group()
 
-    def draw(self,screen):
-        screen.blit(self.ani.image,self.img_rect.topleft)
-        pygame.draw.rect(screen,(255,0,0),self.rect,1)
+    def draw(self,screen,camera):
+        screen.blit(self.ani.image,camera.apply_pos(self.img_rect.topleft))
+        pygame.draw.rect(screen,(255,0,0),camera.apply_rect(self.rect),1)
 
         for frag in self.fragments:
             frag.draw(screen)
@@ -92,4 +94,9 @@ class Box(pygame.sprite.Sprite):
     def __type__(self):
         return Box
 
-        
+class Box1(Box):
+    assets = {
+            'idle':(r'assets\Items\Boxes\Box1\Idle.png',1),
+            'hit':(r'assets\Items\Boxes\Box1\Hit (28x24).png',3),
+            'break':(r'assets\Items\Boxes\Box1\Break.png',4)
+        }

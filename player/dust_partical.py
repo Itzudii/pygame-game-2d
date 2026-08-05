@@ -1,7 +1,7 @@
 import random 
 from utils.dependency import get_img
 from utils.partical import Partical
-from constant import TILESIZE
+from settings import TILESIZE
 class Dust(Partical):
     img = get_img(r"assets\Other\Dust Particle.png",(TILESIZE//3,TILESIZE//3))
     def __init__(self, lifespan):
@@ -9,8 +9,8 @@ class Dust(Partical):
         self.img = self.__class__.img.convert_alpha()
         self.w = self.img.get_width()
 
-    def draw(self,screen):
-        screen.blit(self.img,(self.x-self.w//2,self.y-self.w//2))
+    def draw(self,screen,camera):
+        screen.blit(self.img,camera.apply_pos((self.x-self.w//2,self.y-self.w//2)))
 
 class DustH(Dust):
     def __init__(self,x,y,lifespan,h):

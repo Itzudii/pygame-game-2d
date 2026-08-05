@@ -1,5 +1,5 @@
 import pygame
-from constant import TILESIZE,BASESIZE
+from settings import TILESIZE,BASESIZE
 def get_frames(url,col,both = True,offset_l=0,offset_r=0,offset_t=0,scale_factor=None):
     img = pygame.image.load(url)
     w = img.get_width()

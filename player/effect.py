@@ -29,10 +29,10 @@ class Effect(pygame.sprite.Sprite):
             else:
                 self.isfinished = False
 
-    def draw(self,screen):
+    def draw(self,screen,camera):
         centerx = self.centerx - self.w//2
         centery = self.centery - self.h//2
-        screen.blit(self.frames[self.idx],(centerx,centery))
+        screen.blit(self.frames[self.idx],camera.apply_pos((centerx,centery)))
 
     def update(self):
         self.animation_loop()

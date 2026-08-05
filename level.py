@@ -1,68 +1,52 @@
 import pygame
-from maps import map1
 from player.model import Player
-from items.checkpoints import Start,End,Flag,Checkpoint
-from items.fruits import Apple,Fruit
-from items.boxs import Box
-from constant import TILESIZE,BASESIZE
-import json
-from tmj.tiledraw import TileDraw
+from items.checkpoints import Start,Flag,End
+from items.fruits import Bananas,Fruit
+from items.boxs import Box1
+from settings import TILESIZE,WINDOW_W,WINDOW_H
+from pytmx_mapper.map import TileMap
+from pytmx_mapper.layers import Layer
 
-def get_obj(name:str):
-    name_to_obj = {
-        'apple':Apple,
-        'box':Box,
-        'flag':Flag,
-        'end':End,
-        'player':Player,
-        'start':Start,
-    }
-
-    return name_to_obj.get(name)
 
 class Level():
     tilesize=TILESIZE
     def __init__(self):
-        self.map = TileDraw('tiled/map_final.tmj')
-        self.landblocks = [pygame.Rect(pos[0],pos[1],TILESIZE,TILESIZE) for img,pos in self.map.collision_tiles]
+        layers = {
+                    "normal_tile":Layer.NORMAL,
+                    "background_tile":Layer.NORMAL,
+                    "collision_normal_tile":Layer.COLLIDE, 
+                    "decoration_object_layer":Layer.DECORATION, 
+                    "decoration_object_layer_foreground":Layer.DECORATION,
+                    "object_layer":Layer.OBJECT,
+                }
+        self.map = TileMap('mapdata/map.tmx',layers,TILESIZE)
+        self.map.resize_map((WINDOW_W,WINDOW_H))
+        self.camera = self.map.camera
 
-        self.player = None
         self.checkpoints = pygame.sprite.Group()
         self.fruits = pygame.sprite.Group()
         self.boxs = pygame.sprite.Group()
 
-        self.load_map()
-
     
-    def load_map(self):
+    def load(self):
+        self.map.load()
+        self.landblocks = [collider.rect for collider in self.map.colliders["collision_normal_tile"]]
+        self.player = Player((100,100))
 
-        def update_collision_rect(obj,rect):
-            ratio = TILESIZE/BASESIZE
-            obj.rect.x += int(rect['x'])*ratio
-            obj.rect.y += int(rect['y'])*ratio
-            obj.rect.w = int(rect['width'])*ratio
-            obj.rect.h = int(rect['height'])*ratio
-            return obj
+        for name,lst in self.map.objs['object_layer'].items():
+            match (name):
+                case 'start':self.checkpoints.add(*(Start(d) for d in lst)) 
+                case 'flag':self.checkpoints.add(*(Flag(d) for d in lst)) 
+                case 'end':self.checkpoints.add(*(End(d) for d in lst)) 
+                case 'box1':self.boxs.add(*(Box1(d) for d in lst)) 
+                case 'Banana':self.fruits.add(*(Bananas(d) for d in lst)) 
 
-
-        for gid,name,pos in self.map.objs:
-            ref = get_obj(name)
-            if ref:
-                obj = ref((pos[0]*TILESIZE//16,pos[1]*TILESIZE//16))
-                rect = self.map.get_collision_rect(gid)
-                if rect:
-                    obj = update_collision_rect(obj,rect)
-                if isinstance(obj,Player):
-                    self.player = obj
-                elif isinstance(obj,Fruit):
-                    self.fruits.add(obj)
-                elif isinstance(obj,Checkpoint):
-                    self.checkpoints.add(obj)
-                elif isinstance(obj,Box):
-                    self.boxs.add(obj)
 
     def event_handle(self,event):
         self.player.event_handle(event)
+        # if event.type == pygame.MOUSEBUTTONDOWN:
+        #     pos = pygame.mouse.get_pos()
+        #     print(pos)
         pass
 
     def key_handle(self,key):
@@ -71,17 +55,18 @@ class Level():
 
     def draw(self,screen):
         self.map.draw_layers(screen)
-
+        self.map.draw_colliders(screen,"collision_normal_tile",(255,0,0))
+    
         for flag in self.checkpoints:
-            flag.draw(screen)
+            flag.draw(screen,self.camera)
 
         for box in self.boxs:
-            box.draw(screen)
+            box.draw(screen,self.camera)
 
         for fruit in self.fruits:
-            fruit.draw(screen)
+            fruit.draw(screen,self.camera)
 
-        self.player.draw(screen,"")
+        self.player.draw(screen,self.camera)
 
     def collisions(self):
         
@@ -106,8 +91,9 @@ class Level():
         self.checkpoints.update()
         self.fruits.update()
         self.boxs.update()
+        
         self.player.update(level=self)
-        # self.camera.update(self.player)
+        self.camera.focus(self.player)
 
 
 
