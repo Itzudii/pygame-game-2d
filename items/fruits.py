@@ -20,14 +20,13 @@ class Fruit(pygame.sprite.Sprite):
         cls.load_assets(data)
         super().__init__()
         self.ani = Animation(cls.frames)
-        self.img_rect = self.ani.image.get_rect()
-        self.img_rect.topleft = data.pos
-        self.rects = [pygame.Rect(rect.x,rect.y,rect.w,rect.h) for rect in data.rects]
-        self.rect = self.rects[0]
+        self.m_rect = data.rects[0]
+        self.rect = pygame.Rect(self.m_rect.x,self.m_rect.y,self.m_rect.w,self.m_rect.h)
+        self.img_pos = data.pos
         self.ishit = False
 
     def draw(self,screen,camera):
-        screen.blit(self.ani.image,camera.apply_pos(self.img_rect.topleft))
+        screen.blit(self.ani.image,camera.apply_pos(self.img_pos))
 
     def update(self):
         if self.ani.isfinished and self.ishit:

@@ -1,15 +1,15 @@
 import pygame
-from player.model import Player
+from player.model import NinjaFrog,MaskDude,PinkMan,VirtualGuy
 from items.checkpoints import Start,Flag,End
 from items.fruits import Bananas,Apple,Orange,Kiwi,Cherries,Pineapple,Strawberry,Melon
 from items.boxs import Box1,Box2,Box3
 from settings import TILESIZE,WINDOW_W,WINDOW_H
 from pytmx_mapper.map import TileMap
 from pytmx_mapper.layers import Layer
+from player.shadow import Shadow
 
 from bg import Blue, Brown, Gray, Green, Pink, Purple, Yellow
 
-bg= r'assets\Background\Blue.png'
 class Level():
     tilesize=TILESIZE
     def __init__(self):
@@ -29,12 +29,9 @@ class Level():
         self.fruits = pygame.sprite.Group()
         self.boxs = pygame.sprite.Group()
 
-    def load(self):
-        self.map.load()
-        self.colliders = self.map.colliders["collision_normal_tile"]
-        self.player = Player((100,100))
-        self.bg = Brown(self.map)
+        self.player = None
 
+    def load_obj_layer(self):
         for name,lst in self.map.objs['object_layer'].items():
             match (name):
                 case 'start':self.checkpoints.add(*(Start(d) for d in lst)) 
@@ -45,6 +42,8 @@ class Level():
                 case 'box2':self.boxs.add(*(Box2(d) for d in lst)) 
                 case 'box3':self.boxs.add(*(Box3(d) for d in lst)) 
 
+                case 'frog':self.player = NinjaFrog(*lst)
+
                 case 'banana':self.fruits.add(*(Bananas(d) for d in lst)) 
                 case 'apple':self.fruits.add(*(Apple(d) for d in lst)) 
                 case 'orange':self.fruits.add(*(Orange(d) for d in lst)) 
@@ -54,12 +53,24 @@ class Level():
                 case 'strawberry':self.fruits.add(*(Strawberry(d) for d in lst)) 
                 case 'melon':self.fruits.add(*(Melon(d) for d in lst)) 
 
+    def load(self):
+        self.map.load()
+
+        self.load_obj_layer()
+
+        self.colliders = self.map.colliders["collision_normal_tile"]
+
+        # self.player = NinjaFrog((100,100))
+        self.shadow = Shadow(self.player)
+
+        self.bg = Brown(self.map)
+
+
+
+
 
     def event_handle(self,event):
         self.player.event_handle(event)
-        # if event.type == pygame.MOUSEBUTTONDOWN:
-        #     pos = pygame.mouse.get_pos()
-        #     print(pos)
         pass
 
     def key_handle(self,key):
@@ -70,7 +81,7 @@ class Level():
         self.bg.draw(screen,self.camera)
 
         self.map.draw_layers(screen)
-        self.map.draw_colliders(screen,"collision_normal_tile",(255,0,0))
+        # self.map.draw_colliders(screen,"collision_normal_tile",(255,0,0))
     
         for flag in self.checkpoints:
             flag.draw(screen,self.camera)
@@ -82,6 +93,8 @@ class Level():
             fruit.draw(screen,self.camera)
 
         self.player.draw(screen,self.camera)
+
+        self.shadow.draw(screen,self.camera)
 
 
     def collisions(self):
@@ -110,6 +123,8 @@ class Level():
         self.boxs.update()
         
         self.player.update(level=self)
+        self.shadow.update(self.colliders)
+
         self.camera.focus(self.player)
 
 

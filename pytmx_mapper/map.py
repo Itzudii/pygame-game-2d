@@ -202,9 +202,25 @@ class TileMap():
                     y = (obj.y+collide.y)*self.scale_factor,
                     w = collide.width*self.scale_factor,
                     h = collide.height*self.scale_factor,
-                    rotation = collide.rotation
+                    rotation = collide.rotation,
+                    dif_x = collide.x*self.scale_factor,
+                    dif_y = collide.y*self.scale_factor,
                 )
                 rects.append(r)
+            if len(rects) == 0:
+                r = MapRect(
+                    name = '',
+                    type = '',
+                    x = (obj.x)*self.scale_factor,
+                    y = (obj.y)*self.scale_factor,
+                    w = obj.width*self.scale_factor,
+                    h = obj.height*self.scale_factor,
+                    rotation = 0,
+                    dif_x = 0,
+                    dif_y = 0,
+                )
+                rects.append(r)
+
         
             objs[obj.name].append(MapObject(
                 gid=obj.gid,

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="left-down" width="64" height="21" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="155">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="left-down" width="64" height="21" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="156">
  <tileset firstgid="1" source="tilesets/Terrain.tsx"/>
  <tileset firstgid="243" source="tilesets/boxs.tsx"/>
  <tileset firstgid="249" source="tilesets/checkpoints.tsx"/>
  <tileset firstgid="252" source="tilesets/fruits.tsx"/>
+ <tileset firstgid="268" source="tilesets/characters.tsx"/>
  <layer id="7" name="background_tile" width="64" height="21">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -147,5 +148,6 @@
   <object id="150" name="kiwi" type="kiwi" gid="263" x="824" y="104" width="32" height="32"/>
   <object id="151" name="banana" type="banana" gid="260" x="920" y="312" width="32" height="32"/>
   <object id="154" name="orange" type="orange" gid="265" x="904" y="72" width="32" height="32"/>
+  <object id="155" name="frog" type="frog" gid="268" x="84" y="296" width="32" height="32"/>
  </objectgroup>
 </map>

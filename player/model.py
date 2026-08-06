@@ -1,6 +1,6 @@
 import pygame
 from enum import Enum
-from utils.dependency import get_frames
+from utils.dependency import get_frames,get_img
 from settings import TILESIZE
 from player.effect import Appear,Disappear
 from player.dust_partical import DustF,DustH,DustJ,DustV
@@ -23,30 +23,23 @@ class Player(pygame.sprite.Sprite):
     
     @classmethod
     def load_assets(cls):
-        if cls.frames == None:
+        if cls.frames is None:
+            cls.frames = {}
+            for state, (path, count) in cls.assets.items():
+                cls.frames[state] = get_frames(path, count)
 
-            cls.frames = dict()
-            cls.frames['idle'] = get_frames(r'assets\Main Characters\Ninja Frog\Idle (32x32).png',11)
-            cls.frames['run'] = get_frames(r'assets\Main Characters\Ninja Frog\Run (32x32).png',12)
-            cls.frames['wallJUMP'] = get_frames(r'assets\Main Characters\Ninja Frog\Wall Jump (32x32).png',5)
-            cls.frames['jump'] = get_frames(r'assets\Main Characters\Ninja Frog\Jump (32x32).png',1)
-            cls.frames['hurt'] = get_frames(r'assets\Main Characters\Ninja Frog\Hit (32x32).png',7)
-            cls.frames['fall'] = get_frames(r'assets\Main Characters\Ninja Frog\Fall (32x32).png',1)
-            cls.frames['djump'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
-            cls.frames['appear'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
-            cls.frames['desappear'] = get_frames(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
-
-    def __init__(self,bottomleft):
+    def __init__(self,data):
+        cls = self.__class__
+        cls.load_assets()
         super().__init__()
-        Player.load_assets()
-
+        print(data)
+    
         self.direction = 1 # (-1,left)  (1,right)
-        self.animation = Animation(Player.frames)
+        self.animation = Animation(cls.frames)
 
-        self.rect:pygame.Rect = self.animation.image.get_rect()
-        self.offset_x = TILESIZE//5
-        self.rect.topleft = bottomleft
-        self.rect.w -= self.offset_x*2
+        self.m_rect = data.rects[0]
+        self.rect = pygame.Rect(self.m_rect.x,self.m_rect.y,self.m_rect.w,self.m_rect.h)
+
         self.speed = TILESIZE//6
         self.speed_dt = 0
         self.move = False
@@ -71,9 +64,10 @@ class Player(pygame.sprite.Sprite):
         self.effects = pygame.sprite.Group()
         self.particals = pygame.sprite.Group()
 
+
     def draw(self,screen,camera):
         if self.isvisible and len(self.effects) == 0:
-            screen.blit(self.animation.image,camera.apply_pos((self.rect.x-self.offset_x,self.rect.y)))
+            screen.blit(self.animation.image,camera.apply_pos((self.rect.x-self.m_rect.dif_x,self.rect.y-self.m_rect.dif_y)))
         pygame.draw.rect(screen,(255,0,0),camera.apply_rect(self.rect),1)
 
         for partical in self.particals:
@@ -81,6 +75,7 @@ class Player(pygame.sprite.Sprite):
 
         for effect in self.effects:
             effect.draw(screen,camera)
+
 
 
     def update_state(self):
@@ -169,9 +164,6 @@ class Player(pygame.sprite.Sprite):
             elif self.iscollide_right:
                 self.particals.add(DustV(self.rect.right,self.rect.bottom,random.randint(20,30)))
            
-                
-
-
     def collision_check_x_axis(self,level):
         self.iscollide_right = False
         self.iscollide_left = False
@@ -205,6 +197,7 @@ class Player(pygame.sprite.Sprite):
 
         self.effects.update()
         self.particals.update()
+
 
     def event_handle(self,event):
         if event.type == pygame.KEYDOWN:
@@ -262,3 +255,60 @@ class Player(pygame.sprite.Sprite):
     def ideal(self):
         self.move = False
         self.speed_dt = 0
+
+
+
+
+class NinjaFrog(Player):
+    assets = {
+    "idle": (r'assets\Main Characters\Ninja Frog\Idle (32x32).png',11),
+    "run": (r'assets\Main Characters\Ninja Frog\Run (32x32).png',12),
+    "wallJUMP": (r'assets\Main Characters\Ninja Frog\Wall Jump (32x32).png',5),
+    "jump": (r'assets\Main Characters\Ninja Frog\Jump (32x32).png',1),
+    "hurt": (r'assets\Main Characters\Ninja Frog\Hit (32x32).png',7),
+    "fall": (r'assets\Main Characters\Ninja Frog\Fall (32x32).png',1),
+    "djump":(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6),
+    "appear":(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6),
+    "desappear":(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
+    }
+
+class MaskDude(Player):
+    assets = {
+    "idle": (r'assets\Main Characters\Mask Dude\Idle (32x32).png',11),
+    "run": (r'assets\Main Characters\Mask Dude\Run (32x32).png',12),
+    "wallJUMP": (r'assets\Main Characters\Mask Dude\Wall Jump (32x32).png',5),
+    "jump": (r'assets\Main Characters\Mask Dude\Jump (32x32).png',1),
+    "hurt": (r'assets\Main Characters\Mask Dude\Hit (32x32).png',7),
+    "fall": (r'assets\Main Characters\Mask Dude\Fall (32x32).png',1),
+    "djump":(r'assets\Main Characters\Mask Dude\Double Jump (32x32).png',6),
+    "appear":(r'assets\Main Characters\Mask Dude\Double Jump (32x32).png',6),
+    "desappear":(r'assets\Main Characters\Mask Dude\Double Jump (32x32).png',6)
+    }
+
+class PinkMan(Player):
+    assets = {
+    "idle": (r'assets\Main Characters\Pink Man\Idle (32x32).png',11),
+    "run": (r'assets\Main Characters\Pink Man\Run (32x32).png',12),
+    "wallJUMP": (r'assets\Main Characters\Pink Man\Wall Jump (32x32).png',5),
+    "jump": (r'assets\Main Characters\Pink Man\Jump (32x32).png',1),
+    "hurt": (r'assets\Main Characters\Pink Man\Hit (32x32).png',7),
+    "fall": (r'assets\Main Characters\Pink Man\Fall (32x32).png',1),
+    "djump":(r'assets\Main Characters\Pink Man\Double Jump (32x32).png',6),
+    "appear":(r'assets\Main Characters\Pink Man\Double Jump (32x32).png',6),
+    "desappear":(r'assets\Main Characters\Pink Man\Double Jump (32x32).png',6)
+    }
+
+class VirtualGuy(Player):
+    assets = {
+    "idle": (r'assets\Main Characters\Virtual Guy\Idle (32x32).png',11),
+    "run": (r'assets\Main Characters\Virtual Guy\Run (32x32).png',12),
+    "wallJUMP": (r'assets\Main Characters\Virtual Guy\Wall Jump (32x32).png',5),
+    "jump": (r'assets\Main Characters\Virtual Guy\Jump (32x32).png',1),
+    "hurt": (r'assets\Main Characters\Virtual Guy\Hit (32x32).png',7),
+    "fall": (r'assets\Main Characters\Virtual Guy\Fall (32x32).png',1),
+    "djump":(r'assets\Main Characters\Virtual Guy\Double Jump (32x32).png',6),
+    "appear":(r'assets\Main Characters\Virtual Guy\Double Jump (32x32).png',6),
+    "desappear":(r'assets\Main Characters\Virtual Guy\Double Jump (32x32).png',6)
+    }
+
+
