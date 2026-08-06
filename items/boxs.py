@@ -2,10 +2,8 @@ import pygame
 from animation import Animation
 from pytmx_mapper.utils import get_transform_images
 
-
 import random 
 from utils.partical import Partical
-
 
 class Fragment(Partical):
     def __init__(self,img,x,y,lifespan,h):
@@ -30,13 +28,6 @@ class Fragment(Partical):
         self.x += self.speed
 
     
-
-
-
-
-
-
-
 class Box(pygame.sprite.Sprite):
     frames = None
     # assets = {
@@ -99,4 +90,16 @@ class Box1(Box):
             'idle':(r'assets\Items\Boxes\Box1\Idle.png',1),
             'hit':(r'assets\Items\Boxes\Box1\Hit (28x24).png',3),
             'break':(r'assets\Items\Boxes\Box1\Break.png',4)
+        }
+class Box2(Box):
+    assets = {
+            'idle':(r'assets\Items\Boxes\Box2\Idle.png',1),
+            'hit':(r'assets\Items\Boxes\Box2\Hit (28x24).png',3),
+            'break':(r'assets\Items\Boxes\Box2\Break.png',4)
+        }
+class Box3(Box):
+    assets = {
+            'idle':(r'assets\Items\Boxes\Box3\Idle.png',1),
+            'hit':(r'assets\Items\Boxes\Box3\Hit (28x24).png',3),
+            'break':(r'assets\Items\Boxes\Box3\Break.png',4)
         }

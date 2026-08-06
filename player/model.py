@@ -149,8 +149,8 @@ class Player(pygame.sprite.Sprite):
 
         self.isjumped = self.vel_y < 0
         grounded = any((
-            collision_check_y_axis_rects(level.landblocks),
-            # collision_check_y_axis_objs(level.boxs)
+            collision_check_y_axis_objs(level.colliders),
+            collision_check_y_axis_objs(level.boxs)
         ))
 
         self.isfall = not grounded
@@ -185,14 +185,8 @@ class Player(pygame.sprite.Sprite):
                     self.rect.right = block.left
                     self.iscollide_right = True
 
-        # for block in level.landblocks:
-        #     tile_collision(block)
-
-        # for box in level.boxs:
-        #     tile_collision(box.rect)
-
-        for rect in level.landblocks:
-            tile_collision(rect)
+        for collider in level.colliders:
+            tile_collision(collider.rect)
                 
 
             

@@ -1,13 +1,14 @@
 import pygame
 import sys
 from level import Level
+from settings import WINDOW_W,WINDOW_H
 class App():
     def __init__(self):
         pygame.init()
         self.level = Level()
         self.clock = pygame.time.Clock()
         
-        self.screen = pygame.display.set_mode((self.level.map.window_width,self.level.map.window_height))
+        self.screen = pygame.display.set_mode((WINDOW_W,WINDOW_H))
         self.isRunning = True
         self.dt = 0
         self.load()
