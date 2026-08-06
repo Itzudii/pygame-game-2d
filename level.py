@@ -30,20 +30,37 @@ class Level():
         self.boxs = pygame.sprite.Group()
 
         self.player = None
+        self.bg = None
 
     def load_obj_layer(self):
         for name,lst in self.map.objs['object_layer'].items():
             match (name):
+                # checkpoints
                 case 'start':self.checkpoints.add(*(Start(d) for d in lst)) 
                 case 'flag':self.checkpoints.add(*(Flag(d) for d in lst)) 
                 case 'end':self.checkpoints.add(*(End(d) for d in lst)) 
 
+                # boxs
                 case 'box1':self.boxs.add(*(Box1(d) for d in lst)) 
                 case 'box2':self.boxs.add(*(Box2(d) for d in lst)) 
                 case 'box3':self.boxs.add(*(Box3(d) for d in lst)) 
 
+                # players
                 case 'frog':self.player = NinjaFrog(*lst)
+                case 'mask':self.player = MaskDude(*lst)
+                case 'pink':self.player = PinkMan(*lst)
+                case 'virtual':self.player = VirtualGuy(*lst)
 
+                # BGs
+                case 'blue':self.bg = Blue(self.map)
+                case 'brown':self.bg = Brown(self.map)
+                case 'gray':self.bg = Gray(self.map)
+                case 'green':self.bg = Green(self.map)
+                case 'pink':self.bg = Pink(self.map)
+                case 'purple':self.bg = Purple(self.map)
+                case 'yellow':self.bg = Yellow(self.map)
+
+                # fruits
                 case 'banana':self.fruits.add(*(Bananas(d) for d in lst)) 
                 case 'apple':self.fruits.add(*(Apple(d) for d in lst)) 
                 case 'orange':self.fruits.add(*(Orange(d) for d in lst)) 
@@ -61,9 +78,9 @@ class Level():
         self.colliders = self.map.colliders["collision_normal_tile"]
 
         # self.player = NinjaFrog((100,100))
+        # self.bg = Yellow(self.map)
         self.shadow = Shadow(self.player)
 
-        self.bg = Brown(self.map)
 
 
 
