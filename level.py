@@ -10,6 +10,12 @@ from player.shadow import Shadow
 
 from bg import Blue, Brown, Gray, Green, Pink, Purple, Yellow
 
+from traps.arrow import Arrow,Trampoline
+from traps.saw import Saw, BrownP, GrayP
+from traps.fan import Fan
+from traps.falling_p import FallingP
+from traps.fire import Fire
+
 class Level():
     tilesize=TILESIZE
     def __init__(self):
@@ -20,6 +26,8 @@ class Level():
                     "decoration_object_layer":Layer.DECORATION, 
                     "decoration_object_layer_foreground":Layer.DECORATION,
                     "object_layer":Layer.OBJECT,
+                    "traps_layer":Layer.OBJECT,
+                    "paths_layer":Layer.SHAPE,
                 }
         self.map = TileMap('mapdata/map.tmx',layers,TILESIZE)
         self.map.resize_map((WINDOW_W,WINDOW_H))
@@ -28,6 +36,14 @@ class Level():
         self.checkpoints = pygame.sprite.Group()
         self.fruits = pygame.sprite.Group()
         self.boxs = pygame.sprite.Group()
+
+        self.arrows = pygame.sprite.Group()
+        self.saws = pygame.sprite.Group()
+        self.platforms = pygame.sprite.Group()
+        self.falling_platforms = pygame.sprite.Group()
+        self.fans = pygame.sprite.Group()
+        self.fires = pygame.sprite.Group()
+        
 
         self.player = None
         self.bg = None
@@ -70,10 +86,40 @@ class Level():
                 case 'strawberry':self.fruits.add(*(Strawberry(d) for d in lst)) 
                 case 'melon':self.fruits.add(*(Melon(d) for d in lst)) 
 
+
+    def load_traps_layer(self):
+        for name,lst in self.map.objs['traps_layer'].items():
+            match (name):
+                # checkpoints
+                case 'arrow':self.arrows.add(*(Arrow(d) for d in lst)) 
+                case 'trampoline':self.arrows.add(*(Trampoline(d) for d in lst)) 
+                case 'saw':
+                    for d in lst:
+                        id = d.prop.get('path')
+                        path = self.map.get_obj_by_id(id)
+                        points = path.points
+                        self.saws.add(Saw(d,points)) 
+                case 'brown_platform':
+                    for d in lst:
+                        id = d.prop.get('path')
+                        path = self.map.get_obj_by_id(id)
+                        points = path.points
+                        self.platforms.add(BrownP(d,points)) 
+                case 'grey_platform':
+                    for d in lst:
+                        id = d.prop.get('path')
+                        path = self.map.get_obj_by_id(id)
+                        points = path.points
+                        self.platforms.add(GrayP(d,points)) 
+                case 'fan':self.fans.add(*(Fan(d) for d in lst)) 
+                case 'falling_platform':self.falling_platforms.add(*(FallingP(d) for d in lst)) 
+                case 'fire':self.fires.add(*(Fire(d) for d in lst)) 
+
     def load(self):
         self.map.load()
 
         self.load_obj_layer()
+        self.load_traps_layer()
 
         self.colliders = self.map.colliders["collision_normal_tile"]
 
@@ -109,6 +155,24 @@ class Level():
         for fruit in self.fruits:
             fruit.draw(screen,self.camera)
 
+        for arrow in self.arrows:
+            arrow.draw(screen,self.camera)
+
+        for saw in self.saws:
+            saw.draw(screen,self.camera)
+
+        for platform in self.platforms:
+            platform.draw(screen,self.camera)
+
+        for fan in self.fans:
+            fan.draw(screen,self.camera)
+
+        for falling_platform in self.falling_platforms:
+            falling_platform.draw(screen,self.camera)
+
+        for fire in self.fires:
+            fire.draw(screen,self.camera)
+
         self.player.draw(screen,self.camera)
 
         self.shadow.draw(screen,self.camera)
@@ -129,7 +193,37 @@ class Level():
         for box in self.boxs:
             if box.rect.colliderect(self.player.rect):
                 box.get_break()
+
+        for arrow in self.arrows:
+            if arrow.rect.colliderect(self.player.rect):
+                arrow.hit()
+                self.player.jump_with_int(10)
+                self.player.reset_jump()
                 #  increase points
+        
+        for platform in self.platforms:
+            rect = self.player.rect.move(0,2)
+            if platform.rect.colliderect(rect):
+                self.player.rect.x += platform.path.dx
+
+        for falling_platform in self.falling_platforms:
+            rect = self.player.rect.move(0,2)
+            if falling_platform.rect.colliderect(rect):
+                falling_platform.hit()
+                self.player.reset_jump()
+
+        for fire in self.fires:
+            rect = self.player.rect.move(0,2)
+            if fire.rect.colliderect(rect):
+                hit = fire.hit()
+                if not hit:
+                    pass # player got damage 
+                    print('health -1')
+                else:
+                    pass # fire got damage 
+
+
+        
 
 
     def update(self):
@@ -138,6 +232,12 @@ class Level():
         self.checkpoints.update()
         self.fruits.update()
         self.boxs.update()
+        self.arrows.update()
+        self.saws.update()
+        self.platforms.update()
+        self.fans.update()
+        self.falling_platforms.update()
+        self.fires.update()
         
         self.player.update(level=self)
         self.shadow.update(self.colliders)

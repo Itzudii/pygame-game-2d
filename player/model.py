@@ -65,6 +65,7 @@ class Player(pygame.sprite.Sprite):
         self.particals = pygame.sprite.Group()
 
 
+
     def draw(self,screen,camera):
         if self.isvisible and len(self.effects) == 0:
             screen.blit(self.animation.image,camera.apply_pos((self.rect.x-self.m_rect.dif_x,self.rect.y-self.m_rect.dif_y)))
@@ -106,7 +107,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += round(self.vel_y)
 
     def collision_check_y_axis(self,level):
-        foot = self.rect.move(0, 1)
+        foot = self.rect.move(0, 2)
 
         def collision_check_y_axis_rects(rects):
 
@@ -131,7 +132,7 @@ class Player(pygame.sprite.Sprite):
             for obj in objs:
                 if self.rect.colliderect(obj.rect):
                     if self.isjumped:
-                        self.rect.top = obj.rect.bottom
+                        self.rect.top = obj.rect.bottom+1
                         self.isdoublej = False
                     else:
                         self.rect.bottom = obj.rect.top
@@ -145,7 +146,10 @@ class Player(pygame.sprite.Sprite):
         self.isjumped = self.vel_y < 0
         grounded = any((
             collision_check_y_axis_objs(level.colliders),
-            collision_check_y_axis_objs(level.boxs)
+            collision_check_y_axis_objs(level.boxs),
+            collision_check_y_axis_objs(level.platforms),
+            collision_check_y_axis_objs(level.falling_platforms),
+            collision_check_y_axis_objs(level.fires)
         ))
 
         self.isfall = not grounded
@@ -179,9 +183,21 @@ class Player(pygame.sprite.Sprite):
 
         for collider in level.colliders:
             tile_collision(collider.rect)
-                
 
-            
+        for platform in level.platforms:
+            tile_collision(platform.rect)
+
+        for falling_platform in level.falling_platforms:
+            tile_collision(falling_platform.rect)
+
+        for fire in level.fires:
+            tile_collision(fire.rect)
+
+    def reset_jump(self):
+        self.isjumped = False
+        self.isdoublej = False
+        self.doublejumpuse = False
+
     def update(self,level):
         self.animation.direction = self.direction
         self.animation.update()
@@ -241,6 +257,15 @@ class Player(pygame.sprite.Sprite):
             self.vel_y = -self.jump_intensity
             self.isdoublej = True
             self.doublejumpuse = True
+
+    def jump_with_int(self,intensity=0):
+            if intensity>0:
+                self.vel_y = -intensity
+            else:
+                self.vel_y = -self.jump_intensity
+                
+
+
 
     def left(self):
         self.speed_dt = -self.speed
