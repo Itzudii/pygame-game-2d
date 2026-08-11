@@ -5,7 +5,7 @@ from settings import TILESIZE
 from player.effect import Appear,Disappear
 from player.dust_partical import DustF,DustH,DustJ,DustV
 import random
-from animation import Animation
+from utils.animation import Animation
 
 class State(Enum):
     IDLE = "idle"
@@ -32,7 +32,6 @@ class Player(pygame.sprite.Sprite):
         cls = self.__class__
         cls.load_assets()
         super().__init__()
-        print(data)
     
         self.direction = 1 # (-1,left)  (1,right)
         self.animation = Animation(cls.frames)
@@ -58,25 +57,31 @@ class Player(pygame.sprite.Sprite):
         self.doublejumpuse = False
         
         self.is_hit = False
-        self.isvisible = True
+        self.isvisible = False
         self.hitground = False
+
+        # health
+        self.max_health = 3
+        self.health = self.max_health
+        self.invincible = False
+        self.invincible_timer = 0
+        self.invincible_duration = 90  # frames (~1.5s at 60fps)
+        self.is_dead = False
 
         self.effects = pygame.sprite.Group()
         self.particals = pygame.sprite.Group()
-
+        self.appearing()
 
 
     def draw(self,screen,camera):
         if self.isvisible and len(self.effects) == 0:
             screen.blit(self.animation.image,camera.apply_pos((self.rect.x-self.m_rect.dif_x,self.rect.y-self.m_rect.dif_y)))
-        pygame.draw.rect(screen,(255,0,0),camera.apply_rect(self.rect),1)
 
         for partical in self.particals:
             partical.draw(screen,camera)
 
         for effect in self.effects:
             effect.draw(screen,camera)
-
 
 
     def update_state(self):
@@ -109,30 +114,12 @@ class Player(pygame.sprite.Sprite):
     def collision_check_y_axis(self,level):
         foot = self.rect.move(0, 2)
 
-        def collision_check_y_axis_rects(rects):
-
-            grounded = any(foot.colliderect(rect) for rect in rects)
-            for rect in rects:
-                if self.rect.colliderect(rect):
-                    if self.isjumped:
-                        self.rect.top = rect.bottom
-                        self.isdoublej = False
-                    else:
-                        self.rect.bottom = rect.top
-                        if not self.hitground:
-                            self.hitground = True
-                            for _ in range(5):
-                                self.particals.add(DustF(self.rect.centerx,self.rect.bottom,random.randint(20,40),50))
-                    self.vel_y = 0
-            return grounded
-
         def collision_check_y_axis_objs(objs):
-            grounded = any(foot.colliderect(obj.rect) for obj in objs)
-
+            resolved = False
             for obj in objs:
                 if self.rect.colliderect(obj.rect):
                     if self.isjumped:
-                        self.rect.top = obj.rect.bottom+1
+                        self.rect.top = obj.rect.bottom + 1
                         self.isdoublej = False
                     else:
                         self.rect.bottom = obj.rect.top
@@ -141,16 +128,19 @@ class Player(pygame.sprite.Sprite):
                             for _ in range(5):
                                 self.particals.add(DustF(self.rect.centerx,self.rect.bottom,random.randint(20,40),50))
                     self.vel_y = 0
+                    resolved = True
+            # Recheck grounded using updated position
+            grounded = resolved or any(foot.colliderect(obj.rect) for obj in objs)
             return grounded
 
         self.isjumped = self.vel_y < 0
-        grounded = any((
-            collision_check_y_axis_objs(level.colliders),
-            collision_check_y_axis_objs(level.boxs),
-            collision_check_y_axis_objs(level.platforms),
-            collision_check_y_axis_objs(level.falling_platforms),
+        grounded = (
+            collision_check_y_axis_objs(level.colliders) |
+            collision_check_y_axis_objs(level.boxs) |
+            collision_check_y_axis_objs(level.platforms) |
+            collision_check_y_axis_objs(level.falling_platforms) |
             collision_check_y_axis_objs(level.fires)
-        ))
+        )
 
         self.isfall = not grounded
         if self.isfall:
@@ -184,6 +174,9 @@ class Player(pygame.sprite.Sprite):
         for collider in level.colliders:
             tile_collision(collider.rect)
 
+        for box in level.boxs:
+            tile_collision(box.rect)
+
         for platform in level.platforms:
             tile_collision(platform.rect)
 
@@ -214,6 +207,16 @@ class Player(pygame.sprite.Sprite):
         self.effects.update()
         self.particals.update()
 
+        # Invincibility countdown + blink
+
+        if self.invincible and not self.is_dead:
+            self.invincible_timer -= 1
+            # blink every 6 frames
+            self.isvisible = (self.invincible_timer // 6) % 2 == 0
+            if self.invincible_timer <= 0:
+                self.invincible = False
+                self.isvisible = True
+
 
     def event_handle(self,event):
         if event.type == pygame.KEYDOWN:
@@ -221,14 +224,12 @@ class Player(pygame.sprite.Sprite):
                         self.jump()
                         self.particals.add(DustJ(self.rect.centerx,self.rect.bottom,random.randint(20,40),50))
                     if event.key == pygame.K_q:
-                        self.is_hit = True
+                        self.take_damage()
                     if event.key == pygame.K_a:
                         if self.isvisible:
                             self.desappearing()
-                            print('disapper')
                         else:
                             self.appearing()
-                            print('apper')
 
                         
     def appearing(self):
@@ -238,6 +239,17 @@ class Player(pygame.sprite.Sprite):
     def desappearing(self):
         self.effects.add(Disappear(self.rect.centerx,self.rect.centery,self.direction))
         self.isvisible = False
+
+    def teleport(self,coord):
+        if self.animation.finished and self.isvisible:
+            self.desappearing()
+            print('dis')
+        elif self.animation.finished and not self.isvisible:
+            print('apper')
+            self.restore()
+            self.rect.center = coord
+            self.appearing()
+        
 
                     
     def key_handle(self,key):
@@ -263,9 +275,21 @@ class Player(pygame.sprite.Sprite):
                 self.vel_y = -intensity
             else:
                 self.vel_y = -self.jump_intensity
-                
 
+    def take_damage(self, amount=1):
+        """Reduce player health; triggers hurt animation and invincibility frames."""
+        if self.invincible or self.is_dead:
+            return
+        self.health = max(0, self.health - amount)
+        self.is_hit = True
+        self.invincible = True
+        self.invincible_timer = self.invincible_duration
+        if self.health <= 0:
+            self.is_dead = True
 
+    def restore(self):
+        self.health = self.max_health
+        self.is_dead = False
 
     def left(self):
         self.speed_dt = -self.speed
@@ -280,60 +304,5 @@ class Player(pygame.sprite.Sprite):
     def ideal(self):
         self.move = False
         self.speed_dt = 0
-
-
-
-
-class NinjaFrog(Player):
-    assets = {
-    "idle": (r'assets\Main Characters\Ninja Frog\Idle (32x32).png',11),
-    "run": (r'assets\Main Characters\Ninja Frog\Run (32x32).png',12),
-    "wallJUMP": (r'assets\Main Characters\Ninja Frog\Wall Jump (32x32).png',5),
-    "jump": (r'assets\Main Characters\Ninja Frog\Jump (32x32).png',1),
-    "hurt": (r'assets\Main Characters\Ninja Frog\Hit (32x32).png',7),
-    "fall": (r'assets\Main Characters\Ninja Frog\Fall (32x32).png',1),
-    "djump":(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6),
-    "appear":(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6),
-    "desappear":(r'assets\Main Characters\Ninja Frog\Double Jump (32x32).png',6)
-    }
-
-class MaskDude(Player):
-    assets = {
-    "idle": (r'assets\Main Characters\Mask Dude\Idle (32x32).png',11),
-    "run": (r'assets\Main Characters\Mask Dude\Run (32x32).png',12),
-    "wallJUMP": (r'assets\Main Characters\Mask Dude\Wall Jump (32x32).png',5),
-    "jump": (r'assets\Main Characters\Mask Dude\Jump (32x32).png',1),
-    "hurt": (r'assets\Main Characters\Mask Dude\Hit (32x32).png',7),
-    "fall": (r'assets\Main Characters\Mask Dude\Fall (32x32).png',1),
-    "djump":(r'assets\Main Characters\Mask Dude\Double Jump (32x32).png',6),
-    "appear":(r'assets\Main Characters\Mask Dude\Double Jump (32x32).png',6),
-    "desappear":(r'assets\Main Characters\Mask Dude\Double Jump (32x32).png',6)
-    }
-
-class PinkMan(Player):
-    assets = {
-    "idle": (r'assets\Main Characters\Pink Man\Idle (32x32).png',11),
-    "run": (r'assets\Main Characters\Pink Man\Run (32x32).png',12),
-    "wallJUMP": (r'assets\Main Characters\Pink Man\Wall Jump (32x32).png',5),
-    "jump": (r'assets\Main Characters\Pink Man\Jump (32x32).png',1),
-    "hurt": (r'assets\Main Characters\Pink Man\Hit (32x32).png',7),
-    "fall": (r'assets\Main Characters\Pink Man\Fall (32x32).png',1),
-    "djump":(r'assets\Main Characters\Pink Man\Double Jump (32x32).png',6),
-    "appear":(r'assets\Main Characters\Pink Man\Double Jump (32x32).png',6),
-    "desappear":(r'assets\Main Characters\Pink Man\Double Jump (32x32).png',6)
-    }
-
-class VirtualGuy(Player):
-    assets = {
-    "idle": (r'assets\Main Characters\Virtual Guy\Idle (32x32).png',11),
-    "run": (r'assets\Main Characters\Virtual Guy\Run (32x32).png',12),
-    "wallJUMP": (r'assets\Main Characters\Virtual Guy\Wall Jump (32x32).png',5),
-    "jump": (r'assets\Main Characters\Virtual Guy\Jump (32x32).png',1),
-    "hurt": (r'assets\Main Characters\Virtual Guy\Hit (32x32).png',7),
-    "fall": (r'assets\Main Characters\Virtual Guy\Fall (32x32).png',1),
-    "djump":(r'assets\Main Characters\Virtual Guy\Double Jump (32x32).png',6),
-    "appear":(r'assets\Main Characters\Virtual Guy\Double Jump (32x32).png',6),
-    "desappear":(r'assets\Main Characters\Virtual Guy\Double Jump (32x32).png',6)
-    }
 
 

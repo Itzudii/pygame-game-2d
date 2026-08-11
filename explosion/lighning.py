@@ -1,5 +1,6 @@
+# https://craftpix.net/freebies/11-free-pixel-art-explosion-sprites/
 import pygame
-from animation import Animation
+from utils.animation import Animation
 import time
 
 class Lightning(pygame.sprite.Sprite):

@@ -1,3 +1,4 @@
+# https://craftpix.net/freebies/11-free-pixel-art-explosion-sprites/
 from explosion.explosion import Explosion, Wave
 
 class BOOM1(Explosion):

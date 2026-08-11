@@ -5,7 +5,6 @@ from settings import WINDOW_W,WINDOW_H
 class App():
     def __init__(self):
         pygame.init()
-        self.level = Level()
         self.clock = pygame.time.Clock()
         
         self.screen = pygame.display.set_mode((WINDOW_W,WINDOW_H))
@@ -14,6 +13,7 @@ class App():
         self.load()
 
     def load(self):
+        self.level = Level('mapdata/map.tmx')
         self.level.load()
 
     def event_handling(self):
@@ -46,7 +46,7 @@ class App():
 
         pygame.quit()
         sys.exit()
-
+        
 if __name__ == '__main__':
     app = App()
     app.run()

@@ -1,47 +1,5 @@
-import pygame
-from animation import Animation
-from pytmx_mapper.utils import get_transform_images
-
-class Box(pygame.sprite.Sprite):
-    frames = None
-
-    @classmethod
-    def load_assets(cls,data):
-        if cls.frames is None:
-            cls.frames = {}
-            for state, (path, count) in cls.assets.items():
-                cls.frames[state] = {1:get_transform_images(path, count,data.size,data.transform)}
-
-    def __init__(self,data):
-        cls = self.__class__
-        cls.load_assets(data)
-        super().__init__()
-        self.ani = Animation(cls.frames)
-        self.m_rect = data.rects[0]
-        self.rect = pygame.Rect(self.m_rect.x,self.m_rect.y,self.m_rect.w,self.m_rect.h)
-        self.img_pos = data.pos
-        self.ishit = False
-
-    def draw(self,screen,camera):
-        screen.blit(self.ani.image,camera.apply_pos(self.img_pos))
-        pygame.draw.rect(screen,(255,0,0),camera.apply_rect(self.rect),1)
-
-    def update(self):
-        if self.ani.isfinished and self.ishit:
-            self.ani.set_state('idle')
-            self.ishit = False
-        self.ani.update()
-    
-
-    def hit(self):
-        if not self.ishit:
-            self.ani.set_state('hit')
-        self.ishit = True
-
-    def __type__(self):
-        return Box
-
-class Arrow(Box):
+from traps.dependency.jumping import Jumper
+class Arrow(Jumper):
     assets = {
             'hit':(r'assets\Traps\Arrow\Hit (18x18).png',4),
             'idle':(r'assets\Traps\Arrow\Idle (18x18).png',10),
@@ -49,12 +7,5 @@ class Arrow(Box):
 
     def update(self):
         super().update()
-        if self.ani.isfinished and self.ishit:
+        if self.animation.isfinished and self.ishit:
             self.kill()
-
-    
-class Trampoline(Box):
-    assets = {
-            'hit':(r'assets\Traps\Trampoline\Jump (28x28).png',8),
-            'idle':(r'assets\Traps\Trampoline\Idle.png',1),
-        }

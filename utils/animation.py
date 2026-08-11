@@ -13,6 +13,8 @@ class Animation:
         self.idx_f = 0
         self.isfinished = False
 
+    def add(self,key,value):
+        self.frames[key] = value
 
     def set_state(self,state):
         if self.state != state:

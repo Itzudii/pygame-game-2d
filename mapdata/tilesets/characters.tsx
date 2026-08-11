@@ -4,16 +4,25 @@
  <tile id="0" type="frog">
   <image source="../assets/Characters/frog.png" width="32" height="32"/>
   <objectgroup draworder="index" id="2">
-   <object id="1" x="4" y="3.91405" width="23" height="28.086"/>
+   <object id="1" x="6.81818" y="3.91405" width="18.4545" height="28.086"/>
   </objectgroup>
  </tile>
  <tile id="1" type="mask">
   <image source="../assets/Characters/mask.png" width="32" height="32"/>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="6.8" y="3.9" width="18.4545" height="28.086"/>
+  </objectgroup>
  </tile>
  <tile id="2" type="pink">
   <image source="../assets/Characters/pink.png" width="32" height="32"/>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="6.8" y="3.9" width="18.4545" height="28.086"/>
+  </objectgroup>
  </tile>
  <tile id="3" type="virtual">
   <image source="../assets/Characters/virtual.png" width="32" height="32"/>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="6.8" y="3.9" width="18.4545" height="28.086"/>
+  </objectgroup>
  </tile>
 </tileset>

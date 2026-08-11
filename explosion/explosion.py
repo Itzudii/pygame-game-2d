@@ -1,5 +1,7 @@
+# https://craftpix.net/freebies/11-free-pixel-art-explosion-sprites/
+
 import pygame
-from animation import Animation
+from utils.animation import Animation
 
 class Explosion(pygame.sprite.Sprite):
     def __init__(self,lst,x,y):
