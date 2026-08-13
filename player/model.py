@@ -220,16 +220,16 @@ class Player(pygame.sprite.Sprite):
 
     def event_handle(self,event):
         if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        self.jump()
-                        self.particals.add(DustJ(self.rect.centerx,self.rect.bottom,random.randint(20,40),50))
-                    if event.key == pygame.K_q:
-                        self.take_damage()
-                    if event.key == pygame.K_a:
-                        if self.isvisible:
-                            self.desappearing()
-                        else:
-                            self.appearing()
+            if event.key == pygame.K_SPACE:
+                self.jump()
+                self.particals.add(DustJ(self.rect.centerx,self.rect.bottom,random.randint(20,40),50))
+            if event.key == pygame.K_q:
+                self.take_damage()
+            if event.key == pygame.K_a:
+                if self.isvisible:
+                    self.desappearing()
+                else:
+                    self.appearing()
 
                         
     def appearing(self):

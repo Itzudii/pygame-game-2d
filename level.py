@@ -40,6 +40,7 @@ class Level():
                     "object_layer":Layer.OBJECT,
                     "traps_layer":Layer.OBJECT,
                     "paths_layer":Layer.SHAPE,
+                    "buttons":Layer.OBJECT,
                 }
         self.map = TileMap(map_name,layers,TILESIZE)
         self.map.resize_map((WINDOW_W,WINDOW_H))
@@ -137,11 +138,11 @@ class Level():
         self.load_traps_layer()
 
         self.colliders = self.map.colliders["collision_normal_tile"]
+        if self.player:
+            self.save_checkpoints_lst.append(self.player.rect.center)
 
-        self.save_checkpoints_lst.append(self.player.rect.center)
-
-        self.shadow = Shadow(self.player)
-        self.health = HealthBar(self.player)
+            self.shadow = Shadow(self.player)
+            self.health = HealthBar(self.player)
 
 
         # self.sound.add('checkpoint','sound/checkpoint.mp3')
@@ -151,11 +152,13 @@ class Level():
         # self.sound.add('cart','sound/gear.mp3',loops=-1,single=True)
 
     def event_handle(self,event):
-        self.player.event_handle(event)
+        if self.player:
+            self.player.event_handle(event)
         pass
 
     def key_handle(self,key):
-        self.player.key_handle(key)
+        if self.player:
+            self.player.key_handle(key)
         pass
 
     def draw(self,screen):
@@ -192,13 +195,13 @@ class Level():
 
         for spike in self.spikes:
             spike.draw(screen,self.camera)
+        if self.player:
+            self.start.draw(screen,self.camera)
+            self.end.draw(screen,self.camera)
+            self.player.draw(screen,self.camera)
 
-        self.start.draw(screen,self.camera)
-        self.end.draw(screen,self.camera)
-        self.player.draw(screen,self.camera)
-
-        self.shadow.draw(screen,self.camera)
-        self.health.draw(screen)
+            self.shadow.draw(screen,self.camera)
+            self.health.draw(screen)
 
 
     def collisions(self):
@@ -279,7 +282,6 @@ class Level():
 
     def update(self):
         self.bg.update()
-        self.collisions()
         self.checkpoints.update()
         self.fruits.update()
         self.boxs.update()
@@ -290,17 +292,18 @@ class Level():
         self.falling_platforms.update()
         self.fires.update()
         
-        self.start.update()
-        self.end.update()
+        if self.player:
+            self.collisions()
+            self.start.update()
+            self.end.update()
+            self.player.update(level=self)
+            self.shadow.update(self.colliders)
 
-        self.player.update(level=self)
-        self.shadow.update(self.colliders)
+            self.camera.focus(self.player)
 
-        self.camera.focus(self.player)
-
-        if self.player.is_dead:
-            self.player.teleport(self.save_checkpoints_lst[-1])
-            # self.player.restore()
+            if self.player.is_dead:
+                self.player.teleport(self.save_checkpoints_lst[-1])
+                # self.player.restore()
 
 
 

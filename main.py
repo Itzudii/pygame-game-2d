@@ -1,7 +1,11 @@
 import pygame
 import sys
-from level import Level
 from settings import WINDOW_W,WINDOW_H
+from screens.home import Home
+from screens.game import Game
+from screens.levels import Lvls
+
+
 class App():
     def __init__(self):
         pygame.init()
@@ -10,35 +14,35 @@ class App():
         self.screen = pygame.display.set_mode((WINDOW_W,WINDOW_H))
         self.isRunning = True
         self.dt = 0
-        self.load()
 
-    def load(self):
-        self.level = Level('mapdata/map.tmx')
-        self.level.load()
+        self.cur_screen = None
 
-    def event_handling(self):
-        for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.isRunning = False
-                    break
-                self.level.event_handle(event)
+        self.home_screen()
 
-    def key_handling(self):
-        key = pygame.key.get_pressed()
-        self.level.key_handle(key)
+    def home_screen(self):
+        self.cur_screen = Home(self)
 
-    
+    def lvl_screen(self):
+        self.cur_screen = Lvls(self)
+
+    def game_screen(self,lvl):
+        self.cur_screen = Game(self,lvl)
+
+
     def run(self):
         while self.isRunning:
             self.screen.fill((33,31,48))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.isRunning = False
+                self.cur_screen.event_handle(event)
 
-            self.event_handling()
-            
-            self.key_handling()
+            key = pygame.key.get_pressed()
+            self.cur_screen.key_handle(key)
 
-            self.level.update()
+            self.cur_screen.update()
 
-            self.level.draw(self.screen)
+            self.cur_screen.draw(self.screen)
 
             pygame.display.flip()
 
