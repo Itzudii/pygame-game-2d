@@ -4,7 +4,7 @@ from settings import WINDOW_W,WINDOW_H
 from screens.home import Home
 from screens.game import Game
 from screens.levels import Lvls
-
+from savedata.save import Save
 
 class App():
     def __init__(self):
@@ -16,6 +16,7 @@ class App():
         self.dt = 0
 
         self.cur_screen = None
+        self.save = Save('savedata/level.json')
 
         self.home_screen()
 

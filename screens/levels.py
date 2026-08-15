@@ -1,6 +1,6 @@
 import pygame
 from settings import WINDOW_W,WINDOW_H
-
+from savedata.save import Save
 class Lvls():
     def __init__(self,app):
         self.xlimit = 8
@@ -10,6 +10,9 @@ class Lvls():
         self.app = app
         self.current_lvl = None
         self.load()
+        self.save = self.app.save.data
+        
+        
 
     def event_handle(self,event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -37,7 +40,9 @@ class Lvls():
     def draw(self,screen):
         for idx,rect in self.rects:
             lvl,img = self.btns[idx]
+            iscompleted = self.save[str(lvl)]['completed']
             screen.blit(img,rect.topleft)
+            pygame.draw.rect(screen,(255,0,0) if not iscompleted else (0,255,0),rect,1)
 
     def update(self):
         mouse = pygame.mouse.get_pos()

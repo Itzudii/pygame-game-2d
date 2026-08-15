@@ -15,7 +15,7 @@ class BG():
         self.h = self.bg_img.get_height()
 
         self.no_of_blocks_w = (WINDOW_W // self.w) + 1
-        self.no_of_blocks_h = (WINDOW_H // self.h) + 2
+        self.no_of_blocks_h = (WINDOW_H // self.h) + 1
 
         self.w_x = (self.map.width * TILESIZE) - self.no_of_blocks_w * self.w
         self.h_y = (self.map.height * TILESIZE) - self.no_of_blocks_h * self.h
@@ -37,6 +37,7 @@ class BG():
 
         f_x = min(max(x,cam_X),cam_X_w)
         f_y = min(max(y,cam_Y),cam_Y_h)+self.dt
+        # f_y = min(max(y,cam_Y),cam_Y_h)
 
         for j in range(self.no_of_blocks_h):
             for i in range(-1,self.no_of_blocks_w):

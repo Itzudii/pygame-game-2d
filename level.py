@@ -67,6 +67,7 @@ class Level():
         self.save_checkpoints_lst = []
 
         self.sound = SoundManager()
+        self.iscompleted = False
 
     def load_obj_layer(self):
         for name,lst in self.map.objs['object_layer'].items():
@@ -211,6 +212,7 @@ class Level():
 
         if self.end.rect.colliderect(self.player.rect) and self.player.move:
             self.end.hit()
+            self.iscompleted = True
             # self.save_checkpoints(flag)
 
         for flag in self.checkpoints:

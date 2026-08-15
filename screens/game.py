@@ -7,12 +7,13 @@ class Game():
         self.app = app
         self.level = Level(f'mapdata/lvl_{lvl}.tmx')
         self.level.load()
+        self.lvl = lvl
 
     def event_handle(self,event):
         self.level.event_handle(event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                self.app.home_screen()
+                self.app.lvl_screen()
 
     def key_handle(self,key):
         self.level.key_handle(key)
@@ -22,3 +23,7 @@ class Game():
 
     def update(self):
         self.level.update() 
+        if self.level.iscompleted:
+            self.app.save.is_complete(str(self.lvl))
+            self.app.lvl_screen()
+
